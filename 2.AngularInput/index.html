@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<script src="bower_components/angular/angular.js"></script>
+<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+<body>
+	<div class="container">
+			<div class="col-md-4 col-sm-6"  ng-app="" ng-init="first_name">
+				<br>
+ 			 <h3>Enter your name please</h3>
+				 <input type="text" class="form-control"  ng-model="first_name" placeholder="Your Name" >
+				<br/>	
+ 			 <p ng-show="first_name != null && first_name != '' "> Hello {{ first_name }} from angular </p>
+			</div>
+
+</body>
+</html>
+
+
