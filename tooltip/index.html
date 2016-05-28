@@ -6,11 +6,11 @@
 <script src="app.js"></script>
 <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="main.css">
-<body ng-app="myApp">
-	<button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="right" title="!!!">
+<body ng-app="myApp" ng-controller="customersCtrl">
+	<button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="right" title={{exclamation}}>
 		This is a tooltip
 	</button>
-	<bttooltip></bttooltip>
+	<bttooltip>{{exclamation}}</bttooltip>
 </body>
 </html>
 

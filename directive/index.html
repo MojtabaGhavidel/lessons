@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<script src="app.js"></script>
+<script src="directives.js"></script>
+<link rel="stylesheet" type="text/css" href="main.css">
+<body ng-app="myApp">
+	<div w3></div>
+	<div bt-tooltip></div>
+	<div ng-controller="customersCtrl">  
+		<table>
+			<thead>
+				<tr>
+					<th>Fullname</th>
+					<th>Age</th>
+				</tr>
+			</thead>
+			<tr ng-repeat="x in names">
+				<td>{{ x.Name }}</td>
+				<td>{{ x.Country }}</td>
+			</tr>
+		</table>
+	</div>
+</body>
+</html>
+
+
