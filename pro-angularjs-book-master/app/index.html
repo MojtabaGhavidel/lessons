@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html ng-app="linksApp">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="/bower_components/angular/angular.min.js"></script>
+    <script>
+        angular.module('linksApp', [])
+                .controller('defaultCtrl', function ($scope) {
+                    $scope.links = [
+                        { href: "/chapter-02-todo/app.html" },
+                        { href: "/chapter-06-sports/app.html" },
+                        { href: "/chapter-09/example.html" },
+                        { href: "/chapter-10/directives.html" },
+                        { href: "/chapter-10/ng-switch.html" },
+                        { href: "/chapter-11/directives.html" },
+                        { href: "/chapter-11/events.html" },
+                        { href: "/chapter-11/custom-events.html" },
+                        { href: "/chapter-12/forms.html" },
+                        { href: "/chapter-12/user-form.html" },
+                        { href: "/chapter-12/form-input-text.html" },
+                        { href: "/chapter-12/form-select.html" },
+                        { href: "/chapter-13/controllers.html" },
+                        { href: "/chapter-13/monolithic-controller.html" },
+                        { href: "/chapter-13/controllers-inheritance.html" },
+                        { href: "/chapter-13/scope-explicit-update.html" },
+                        { href: "/chapter-14/filters.html" },
+                        { href: "/chapter-15/directives.html" },
+                        { href: "/chapter-16/complex-directives.html" },
+                        { href: "/chapter-16/directives-scope.html" },
+                        { href: "/chapter-17/transclude.html" },
+                        { href: "/chapter-17/compileFunction.html" },
+                        { href: "/chapter-17/directiveControllers.html" },
+                        { href: "/chapter-17/customForms.html" },
+                        { href: "/chapter-18/example.html" },
+                        { href: "/chapter-19/htmlData.html" },
+                        { href: "/chapter-19/expressions.html" },
+                        { href: "/chapter-19/location.html" },
+                        { href: "/chapter-19/anchorScroll.html" },
+                        { href: "/chapter-20/ajax.html" },
+                        { href: "/chapter-20/promises.html" },
+                        { href: "/chapter-21/products.html" },
+                        { href: "/chapter-22/products.html" },
+                        { href: "/chapter-23/products.html" },
+                        { href: "/chapter-23/swipe.html" },
+                        { href: "/chapter-24/components.html" },
+                        { href: "/chapter-25/app.html" }
+                    ];
+                });
+    </script>
+</head>
+<body ng-controller="defaultCtrl">
+    <h1>Pro AngularJS book</h1>
+    <ul>
+        <li ng-repeat="link in links"><a ng-href="{{link.href}}">{{link.href}}</a></li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Stylish Portfolio - Start Bootstrap Theme</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="bower_components/bootstrap-select/dist/css/bootstrap-select.css"/> 
+    <link href="css/main.css" rel="stylesheet">
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+
+</head>
+<body ng-app="validationApp" ng-controller="mainController">
+    <!-- Navigation -->
+    <a id="menu-toggle" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-bars"></i></a>
+		<nav id="sidebar-wrapper">
+        <ul class="sidebar-nav">
+            <a id="menu-close" href="#" class="btn btn-light btn-lg pull-right toggle"><i class="fa fa-times"></i></a>
+            <li class="sidebar-brand">
+                <a href="#top"  onclick = $("#menu-close").click(); >Start Bootstrap</a>
+            </li>
+            <li>
+                <a href="#top" onclick = $("#menu-close").click(); >Home</a>
+            </li>
+            <li>
+                <a href="#about" onclick = $("#menu-close").click(); >About</a>
+            </li>
+            <li>
+                <a href="#services" onclick = $("#menu-close").click(); >Services</a>
+            </li>
+            <li>
+                <a href="#portfolio" onclick = $("#menu-close").click(); >Portfolio</a>
+            </li>
+            <li>
+                <a href="#contact" onclick = $("#menu-close").click(); >Contact</a>
+            </li>
+        </ul>
+    </nav>
+    <div id="top" class="header">
+        <div class="text-vertical-center">
+            <h1>اهل بازی گروهی هستی؟</h1>
+            <h3>میتونی حتی بدون ثبت نام با بقیه رقابت کنی</h3>
+            <br>
+            <a href="#about" class="btn btn-dark btn-lg">ثبت نام کنیم</a>
+						<a class="btn btn-lg">بازی بدون ثبت نام</a>
+        </div>
+    </div>
+    <div id="about" class="about">
+        <div class="container">
+            <div class="row">
+								<div class="row">
+									<div class="col-md-8">
+										<div class="page-header"><h1>AngularJS Form Validation</h1></div>
+											<form name="userForm" ng-submit="submitForm(userForm.$valid)" novalidate>
+												<div class="form-group" ng-class="{ 'has-error' : userForm.name.$invalid && !userForm.name.$pristine }">
+													<label>Full Name*</label>
+													<input type="text" name="name" class="form-control" ng-model="user.name" ng-minlength="5" ng-maxlength="25" required>
+										<p ng-show="userForm.name.$invalid && !userForm.name.$pristine" class="help-block">You name is required.</p>
+										<p ng-show="userForm.name.$error.minlength" class="help-block">Username is too short.</p>
+										<p ng-show="userForm.name.$error.maxlength" class="help-block">Username is too long.</p>
+									</div>
+					<div class="form-group" >
+						<label>Password*</label>
+						<input type="password" name="password" class="form-control" ng-model="user.pssword" ng-minlength="6" required>
+						<p ng-show="userForm.password.$invalid && !userForm.password.$pristine" class="help-block">You password: is required.</p>
+					</div>
+					<div class="form-group">
+						<label>About Me</label>
+						<textarea class="js-auto-size" rows="1"></textarea>	
+					</div>
+					<div class="form-group">
+					<label>Country</label>
+					<select class="selectpicker" data-live-search="true">
+						<option data-tokens="Iran">Iran</option>
+						<option data-tokens="Australia">Australia</option>
+						<option data-tokens="UK">UK</option>
+					</select>
+				</div>
+				<div class="form-group" ng-class="{ 'has-error' : userForm.email.$invalid && !userForm.email.$pristine }">
+					<label>Email*</label>
+					<input type="email" name="email" class="form-control" ng-model="user.email">
+					<p ng-show="userForm.email.$invalid && !userForm.email.$pristine" class="help-block">Enter a valid email.</p>
+				</div>
+				<div class="form-group">
+					<label>Favorite Music Genre</label>
+					<label class="checkbox-inline">
+						<input type="checkbox" name="favoriteColors" ng-model="formData.colors.red"> Trance
+					</label>
+					<label class="checkbox-inline">
+						<input type="checkbox" name="favoriteColors" ng-model="formData.colors.blue"> Jazz
+					</label>
+					<label class="checkbox-inline">
+						<input type="checkbox" name="favoriteColors" ng-model="formData.colors.green"> Country
+					</label>
+				</div>
+				<div class="form-group">
+					<label>Gender*</label>
+					<div class="radio">
+						<label>
+							<input type="radio" name="chickenEgg" value="chicken" ng-model="formData.chickenEgg" required>
+								Male
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="chickenEgg" value="egg" ng-model="formData.chickenEgg" required>
+								Female
+							</label>
+					</div>
+					<p ng-show="userForm.chickenEgg.$invalid && !userForm.chickenEgg.$pristine" class="help-block">You name is required.</p>
+
+				</div>
+				<button type="submit" class="btn btn-primary">Submit</button>
+		</div><!--col-md-3-->
+								</div><!--row-->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container -->
+    </div>
+    <div class="callout">
+        <div class="text-vertical-center">
+            <h1>Vertically Centered Text</h1>
+        </div>
+    </div>
+    <footer>
+                <div class="col-lg-10 col-lg-offset-1 text-center">
+                    <p class="text-muted">Copyright &copy; Your Website 2014</p>
+                </div>
+    </footer>
+		<script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script src="app.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/textarea-autosize/dist/jquery.textarea_autosize.min.js"></script>
+    <script>
+    // Closes the sidebar menu
+    $("#menu-close").click(function(e) {
+        e.preventDefault();
+        $("#sidebar-wrapper").toggleClass("active");
+    });
+    // Opens the sidebar menu
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#sidebar-wrapper").toggleClass("active");
+    });
+    // Scrolls to the selected menu item on the page
+    $(function() {
+        $('a[href*=#]:not([href=#])').click(function() {
+            if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') || location.hostname == this.hostname) {
+
+                var target = $(this.hash);
+                target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
+                if (target.length) {
+                    $('html,body').animate({
+                        scrollTop: target.offset().top
+                    }, 1000);
+                    return false;
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>

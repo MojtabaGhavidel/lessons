@@ -1,12 +1,7 @@
-app.directive("pdir", function() {
-    return {
-        template : "<p>Made by a directive!</p>"
-    };
-});
-app.directive("bttooltip", function() {
-    return {
-        template : "<p>plus h sign bt-tooltip" + "!!!""</p>"
-    };
+app.directive("gh", function() {
+  return {
+    template: "<h1>Business Page</h1>"
+  };
 });
 
 

@@ -1,0 +1,13 @@
+body {
+   
+   
+}
+
+
+textarea {
+  box-sizing: border-box;
+  max-height: 160px; // optional but recommended
+  min-height: 38px;
+  overflow-x: hidden; // for Firefox (issue #5)
+}
+
