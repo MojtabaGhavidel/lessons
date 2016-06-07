@@ -4,8 +4,20 @@ app.controller('customersCtrl', function($scope) {
 });
 
 
-app.directive("ghBusiness", function() {
+app.directive("business", function() {
 	return {
 		template: "<h1>Business Page</h1>"
 	};
 });
+
+
+app.directive("bttooltip", function() {
+    return {
+        template : "<p>Made by a directive!<p>"
+
+    };
+});
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+

@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="app.js"></script>
 <script src="directives.js"></script>
+<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="main.css">
 <body ng-app="myApp">
 	<div bttooltip></div>
@@ -20,8 +23,18 @@
 				<td>{{ x.Country }}</td>
 			</tr>
 		</table>
-		<gh-business></gh-business>
+		<business>
+		</business>
 	</div>
+	<div>
+		<div>
+    	<input  type="text" title="Hello i'm input tag with a tooltip" data-toggle="tooltip" data-placement="right">
+    </div>
+		<br/>
+    <div class="col-md-2">
+      <p data-toggle="tooltip" title="Hello i'm P tag with a tooltip" data-placement>Some Text</p>
+    <div>
+  </div>
 </body>
 </html>
 
