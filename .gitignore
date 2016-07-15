@@ -1,3 +1,15 @@
 *.swp
 *.swm
 *.swn
+*.swo
+/angular-phonecat
+/bower_components
+/directive
+/login
+/login1
+/plural-angular-directive-course
+/pro-angularjs-book-master
+/recipes-with-angular-js-examples
+/template
+/tooltip
+/yumbox-master

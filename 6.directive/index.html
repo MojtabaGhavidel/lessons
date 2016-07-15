@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="app.js"></script>
@@ -8,8 +8,8 @@
 <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="main.css">
 <body ng-app="myApp">
+	<br/>
 	<div bttooltip></div>
-	<div pdir></div>
 	<div ng-controller="customersCtrl">  
 		<table>
 			<thead>
@@ -23,19 +23,12 @@
 				<td>{{ x.Country }}</td>
 			</tr>
 		</table>
-		<business>
-		</business>
+		<gh-business>
+		</gh-business>
+		<input type ="text" gh-tooltip="your text goes here" another-param="another string"></div>
 	</div>
 	<div>
-		<div>
-    	<input  type="text" title="Hello i'm input tag with a tooltip" data-toggle="tooltip" data-placement="right">
-    </div>
 		<br/>
-    <div class="col-md-2">
-      <p data-toggle="tooltip" title="Hello i'm P tag with a tooltip" data-placement>Some Text</p>
-    <div>
   </div>
 </body>
 </html>
-
-
