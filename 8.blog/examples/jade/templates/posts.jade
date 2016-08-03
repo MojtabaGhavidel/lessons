@@ -1,0 +1,67 @@
+doctype html
+html(lang='en')
+  script(src='../bower_components/angular/angular.min.js')
+  script(src='../bower_components/angular-bootstrap/ui-bootstrap.min.js')
+  script(src='/templates/app.js')
+  link(rel='stylesheet' type='text/css' href='bower_components/bootstrap/dist/css/bootstrap.min.css')
+  link(rel='stylesheet', type='text/css', href='/public/css/main.css')
+
+body(ng-app='myApp')
+  nav.navbar.navbar-default
+    container
+      .navbar-header
+         button.navbar-toggle(type='button', data-toggle='collapse', data-target='#myNavbar')
+           span.icon-bar
+           span.icon-bar
+           span.icon-bar
+         a.navbar-brand(href='#') Me
+         img.img-responsive.img-circle.margin(src='public/img/mojtaba.jpg', style='display:inline', width='50',height='50')
+        #myNavbar.collapse.navbar-collapse
+          ul.nav.navbar-nav.navbar-right
+            li
+              a(href='#') WHO
+            li
+              a(href='#') WHAT
+            li
+              a(href='#') WHERE
+  div.container-fluid.bg-1.text-center
+    div(ng-init='first_name', style='width:600px; margin:0 auto;')
+       div.container-fluid.bg-3.text-center
+    h3.margin Where To Find Me?
+    div.row
+      div.col-sm-4
+        p Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        img.img-responsive.margin(src='birds1.jpg' style='width:100%')
+      div.col-sm-4
+        p Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        img.img-responsive.margin(src='birds2.jpg' style='width:100%')
+      div.col-sm-4
+        p Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        img.img-responsive.margin(src='birds3.jpg' style='width:100%')
+footer.container-fluid.bg-4.text-center
+  div(ng-controller='CollapseDemoCtrl')
+    button.btn.btn-default(type='button', ng-click='isCollapsed = !isCollapsed') Toggle collapse Vertically
+    hr
+    div(uib-collapse='isCollapsed')
+      .well.well-lg Some content
+footer.container-fluid.bg-4.text-center
+  p
+    Bootstrap Them made by  
+    a(href='http://geekhouse.ir')  Mojtaba Ghavidel
+      
+  
+
+    
+  
+
+
+
+
+
+    
+  
+
+
+
+
+

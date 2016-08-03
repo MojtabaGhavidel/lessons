@@ -1,3 +1,4 @@
+.gitignore 
 *.swp
 *.swm
 *.swn
@@ -13,3 +14,13 @@
 /template
 /tooltip
 /yumbox-master
+/form
+/livn
+/vision
+/add item
+/yum-clone-hapijade
+/http
+/angularjs-jwt-authentication-tutorial
+/hapi-auth-cookie
+/hapi-authentication-and-authorization/
+

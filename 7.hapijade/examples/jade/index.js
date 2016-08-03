@@ -26,11 +26,38 @@ internals.main = function () {
                 pretty: true
             }
         });
-        server.route({ method: 'GET', path: '/', handler: rootHandler });
+        server.route({
+					 method: 'GET',
+					 path: '/',
+					 handler: rootHandler });
         //server.route({ method: 'GET', path: '/template', handler: templateHandler });
-				server.route({ method: 'GET', path: '/templates/{params*}', handler: { directory: { path:'templates' } } });
-				server.route({ method: 'GET', path: '/bower_components/{params*}', handler: { directory: { path:'bower_components' } } });
-
+				server.route({ 
+					method: 'GET',
+					 path: '/templates/{params*}',
+					 handler: {
+						 directory: {
+							 path:'templates'
+							}
+					 }
+				 });
+				server.route({ 
+					method: 'GET',
+					path: '/bower_components/{params*}',
+					handler: {
+						directory: {
+							 path:'bower_components'
+				}
+			 }
+	 });
+				server.route({ 
+					method: 'GET',
+					path: '/public/{params*}',
+					handler: {
+						directory: {
+							 path:'public'
+				}
+			 }
+	 });
         server.start((err) => {
             if (err) {
                 throw err;
