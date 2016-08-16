@@ -1,115 +1,215 @@
 'use strict';
+
 // Load modules
 
+const Boom = require('boom');
 const Hoek = require('hoek');
 const Joi = require('joi');
-const Manager = require('./manager');
-// Additional helper modules required in constructor
-
 
 // Declare internals
 
 const internals = {};
 
 
-internals.schema = Joi.alternatives([
-    Joi.string(),
-    Joi.object({
-        template: Joi.string(),
-        context: Joi.object(),
-        options: Joi.object()
-    })
-]);
+exports.register = function (server, options, next) {
 
-
-exports.register = function (server, pluginOptions, next) {
-
-    server.decorate('server', 'views', function (options) {
-
-        Hoek.assert(options, 'Missing views options');
-        this.realm.plugins.vision = this.realm.plugins.vision || {};
-        Hoek.assert(!this.realm.plugins.vision.manager, 'Cannot set views manager more than once');
-
-        if (!options.relativeTo &&
-            this.realm.settings.files.relativeTo) {
-
-            options = Hoek.shallow(options);
-            options.relativeTo = this.realm.settings.files.relativeTo;
-        }
-
-        const manager = new Manager(options);
-        this.realm.plugins.vision.manager = manager;
-        return manager;
-    });
-
-    server.decorate('server', 'render', internals.render);
-    server.decorate('request', 'render', internals.render);
-
-    server.handler('view', internals.handler);
-
-    server.decorate('reply', 'view', function (template, context, options) {
-
-        const realm = (this.realm.plugins.vision || this.request.server.realm.plugins.vision || {});
-        Hoek.assert(realm.manager, 'Cannot render view without a views manager configured');
-        return this.response(realm.manager._response(template, context, options, this.request));
-    });
-
-    return next();
+    server.auth.scheme('cookie', internals.implementation);
+    next();
 };
 
+
 exports.register.attributes = {
-    connections: false,
-    once: true,
     pkg: require('../package.json')
 };
 
+internals.schema = Joi.object({
+    cookie: Joi.string().default('sid'),
+    password: Joi.alternatives(Joi.string(), Joi.object().type(Buffer)).required(),
+    ttl: Joi.number().integer().min(0).when('keepAlive', { is: true, then: Joi.required() }),
+    domain: Joi.string().allow(null),
+    path: Joi.string().default('/'),
+    clearInvalid: Joi.boolean().default(false),
+    keepAlive: Joi.boolean().default(false),
+    isSecure: Joi.boolean().default(true),
+    isHttpOnly: Joi.boolean().default(true),
+    redirectTo: Joi.string().allow(false),
+    appendNext: Joi.alternatives(Joi.string(), Joi.boolean()).default(false),
+    redirectOnTry: Joi.boolean().default(true),
+    validateFunc: Joi.func(),
+    requestDecoratorName: Joi.string().default('cookieAuth')
+}).required();
 
-internals.render = function (template, context, options, callback) {
+internals.implementation = function (server, options) {
 
-    if (!callback && typeof options === 'function') {
-        callback = options;
-        options = {};
-    }
+    const results = Joi.validate(options, internals.schema);
+    Hoek.assert(!results.error, results.error);
 
-    const isServer = (typeof this.route === 'function');
-    const server = (isServer ? this : this.server);
-    const vision = ((!isServer ? this.route.realm.plugins.vision : null) || server.realm.plugins.vision || server.root.realm.plugins.vision || {});
-    Hoek.assert(vision.manager, 'Missing views manager');
-    return vision.manager.render(template, context, options, callback);
-};
+    const settings = results.value;
 
-
-internals.handler = function (route, options) {
-
-    Joi.assert(options, internals.schema, 'Invalid view handler options (' + route.path + ')');
-
-    if (typeof options === 'string') {
-        options = { template: options };
-    }
-
-    const settings = {                                                // Shallow copy to allow making dynamic changes to context
-        template: options.template,
-        context: options.context,
-        options: options.options
+    const cookieOptions = {
+        encoding: 'iron',
+        password: settings.password,
+        isSecure: settings.isSecure,                  // Defaults to true
+        path: settings.path,
+        isHttpOnly: settings.isHttpOnly,              // Defaults to true
+        clearInvalid: settings.clearInvalid,
+        ignoreErrors: true
     };
 
-    return function (request, reply) {
+    if (settings.ttl) {
+        cookieOptions.ttl = settings.ttl;
+    }
 
-        const context = {
-            params: request.params,
-            payload: request.payload,
-            query: request.query,
-            pre: request.pre
+    if (settings.domain) {
+        cookieOptions.domain = settings.domain;
+    }
+
+    if (typeof settings.appendNext === 'boolean') {
+        settings.appendNext = (settings.appendNext ? 'next' : '');
+    }
+
+    server.state(settings.cookie, cookieOptions);
+
+    const decoration = function (request) {
+
+        const CookieAuth = function () {
+
+            const self = this;
+
+            this.set = function (session, value) {
+
+                const reply = self.reply;
+
+                if (arguments.length > 1) {
+                    const key = session;
+                    Hoek.assert(key && typeof key === 'string', 'Invalid session key');
+                    session = request.auth.artifacts;
+                    Hoek.assert(session, 'No active session to apply key to');
+
+                    session[key] = value;
+                    return reply.state(settings.cookie, session);
+                }
+
+                Hoek.assert(session && typeof session === 'object', 'Invalid session');
+                request.auth.artifacts = session;
+                reply.state(settings.cookie, session);
+            };
+
+            this.clear = function (key) {
+
+                const reply = self.reply;
+
+                if (arguments.length) {
+                    Hoek.assert(key && typeof key === 'string', 'Invalid session key');
+                    const session = request.auth.artifacts;
+                    Hoek.assert(session, 'No active session to clear key from');
+                    delete session[key];
+                    return reply.state(settings.cookie, session);
+                }
+
+                request.auth.artifacts = null;
+                reply.unstate(settings.cookie);
+            };
+
+            this.ttl = function (msecs) {
+
+                const reply = self.reply;
+                const session = request.auth.artifacts;
+                Hoek.assert(session, 'No active session to modify ttl on');
+                reply.state(settings.cookie, session, { ttl: msecs });
+            };
         };
 
-        if (settings.context) {                                     // Shallow copy to avoid cloning unknown objects
-            const keys = Object.keys(settings.context);
-            for (let i = 0; i < keys.length; ++i) {
-                const key = keys[i];
-                context[key] = settings.context[key];
-            }
-        }
-
-        reply.view(settings.template, context, settings.options);
+        return new CookieAuth();
     };
+
+    server.decorate('request', settings.requestDecoratorName, decoration, { apply: true });
+
+    server.ext('onPreAuth', (request, reply) => {
+
+        // Used for setting and unsetting state, not for replying to request
+        request[settings.requestDecoratorName].reply = reply;
+
+        return reply.continue();
+    });
+
+    const scheme = {
+        authenticate: function (request, reply) {
+
+            const validate = function () {
+
+                // Check cookie
+
+                const session = request.state[settings.cookie];
+                if (!session) {
+                    return unauthenticated(Boom.unauthorized(null, 'cookie'));
+                }
+
+                if (!settings.validateFunc) {
+                    if (settings.keepAlive) {
+                        reply.state(settings.cookie, session);
+                    }
+
+                    return reply.continue({ credentials: session, artifacts: session });
+                }
+
+                settings.validateFunc(request, session, (err, isValid, credentials) => {
+
+                    if (err ||
+                        !isValid) {
+
+                        if (settings.clearInvalid) {
+                            reply.unstate(settings.cookie);
+                        }
+
+                        return unauthenticated(Boom.unauthorized('Invalid cookie'), { credentials: credentials || session, artifacts: session });
+                    }
+
+                    if (settings.keepAlive) {
+                        reply.state(settings.cookie, session);
+                    }
+
+                    return reply.continue({ credentials: credentials || session, artifacts: session });
+                });
+            };
+
+            const unauthenticated = function (err, result) {
+
+                if (settings.redirectOnTry === false &&             // Defaults to true
+                    request.auth.mode === 'try') {
+
+                    return reply(err, null, result);
+                }
+
+                let redirectTo = settings.redirectTo;
+                if (request.route.settings.plugins['hapi-auth-cookie'] &&
+                    request.route.settings.plugins['hapi-auth-cookie'].redirectTo !== undefined) {
+
+                    redirectTo = request.route.settings.plugins['hapi-auth-cookie'].redirectTo;
+                }
+
+                if (!redirectTo) {
+                    return reply(err, null, result);
+                }
+
+                let uri = redirectTo;
+                if (settings.appendNext) {
+                    if (uri.indexOf('?') !== -1) {
+                        uri += '&';
+                    }
+                    else {
+                        uri += '?';
+                    }
+
+                    uri += settings.appendNext + '=' + encodeURIComponent(request.url.path);
+                }
+
+                return reply('You are being redirected...', null, result).redirect(uri);
+            };
+
+            validate();
+        }
+    };
+
+    return scheme;
 };

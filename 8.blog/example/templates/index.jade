@@ -1,0 +1,88 @@
+doctype html
+html(lang='en')
+  script(src='bower_components/angular/angular.min.js')
+  link(rel='stylesheet' type='text/css' href='../bower_components/bootstrap/dist/css/bootstrap.min.css')
+  link(rel='stylesheet', type='text/css', href='/public/css/main.css')
+  link(rel='stylesheet', href='public/css/normalize.css')
+  link(rel='stylesheet prefetch', href='public/css/responsive.css')
+  link(rel='stylesheet', href='public/css/style.css')
+body(ng-app='blogApp')
+  nav.navbar.navbar-default
+    container
+      .navbar-header
+         button.navbar-toggle(type='button', data-toggle='collapse', data-target='#myNavbar')
+        #myNavbar.collapse.navbar-collapse
+          ul.nav.navbar-nav.navbar-right
+            li
+              form(method='get', action='/logout')
+                input(type='submit', value='Logout')
+  if isLoggedin
+    h3 hiiiiii
+  else
+    h4 2222222
+  div(ng-controller='BlogController as blog')
+        .topbar
+          .container
+            .row
+              .col-s-4
+                h1.push-left(ng-click="blog.selectTab('blog')") {{blog.title}}
+              .offset-s-4.col-s-4
+                nav.push-right(role='navigation')
+                  ul
+                    li
+                      a(href='#', ng-click="blog.selectTab('blog')") See All Posts
+                    |  //
+                    li
+                      a(href='#', ng-click="blog.selectTab('new')") Add New Post
+        .content
+          .container
+            .row
+              ul.post-grid(ng-show="blog.isSelected('blog')")
+                li.col-s-4(ng-repeat='post in blog.posts', ng-class="{ 'reset-s' : $index%3==0 }", ng-click='blog.selectTab($index)')
+                  h3 {{post.title}}
+                  p {{post.body[0] | limitTo:70}}...
+                  p.fa.fa-comment.push-left
+                    | {{post.comments.length}}
+                  p.fa.fa-heart.push-right
+                    | {{post.likes}}
+              .post(ng-repeat='post in blog.posts', ng-show='blog.isSelected($index)')
+                div
+                  h2 {{post.title}}
+                  img(src='{{post.image}}', ng-show='{{post.image}}')
+                  cite by {{post.author}} on {{post.createdOn | date}}
+                  .post-body
+                    p(ng-repeat='paragraph in post.body')
+                      | {{paragraph}}
+                  .comments(ng-controller='CommentController as commentCtrl')
+                    button.fa.fa-heart(ng-click='post.likes = post.likes+1')  {{post.likes}}
+                    h3 Comments
+                    ul
+                      li(ng-repeat='comment in post.comments')
+                        | "{{comment.body}}"
+                        cite
+                          | - 
+                          b {{comment.author}}
+                 if isLoggedin  
+                   include comment.jade
+              .post(ng-show="blog.isSelected('new')")
+                h2 Add New Post
+                form(name='postForm', ng-submit=' blog.addPost()', novalidate='')
+                  h4 Title
+                  input(type='text', ng-model='blog.post.title')
+                  h4 Body
+                  textarea(ng-model='blog.post.body', ng-list='/\n/', rows='10')
+                  label(for='') Featured Image URL
+                  input(type='text', ng-model='blog.post.image', placeholder='http://placekitten.com/g/2000/600')
+                  label(for='') by:
+                  input(type='text', ng-model='blog.post.author', placeholder='Author Name', required='')
+                  input(type='submit', value='Submit')
+footer.container-fluid.bg-4.text-center
+  p
+    Bootstrap Theme made by  
+    a(href='http://geekhouse.ir')  Mojtaba Ghavidel
+    
+script(src='bower_components/angular-animate.js')
+script(src='bower_components/dist/jquery-2.1.0.min.js')
+script(src='public/responsive.js')
+script(src='public/js/index.js')
+

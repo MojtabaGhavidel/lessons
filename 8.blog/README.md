@@ -1,233 +1,203 @@
-#vision
+### hapi-auth-cookie
 
-Templates rendering plugin support for hapi.js.
+[**hapi**](https://github.com/hapijs/hapi) Cookie authentication plugin
 
-[![Build Status](https://secure.travis-ci.org/hapijs/vision.png)](http://travis-ci.org/hapijs/vision)
+[![Build Status](https://secure.travis-ci.org/hapijs/hapi-auth-cookie.png)](http://travis-ci.org/hapijs/hapi-auth-cookie)
 
-Lead Maintainer - [Jeffrey Jagoda](https://github.com/jagoda)
+Lead Maintainer: [James Weston](https://github.com/jaw187)
 
-**vision** decorates the [server](https://github.com/hapijs/hapi/blob/master/API.md#server),
-[request](https://github.com/hapijs/hapi/blob/master/API.md#request-object), and
-[reply](https://github.com/hapijs/hapi/blob/master/API.md#reply-interface) interfaces with additional
-methods for managing view engines that can be used to render templated responses. **vision** also
-provides a built-in [handler](https://github.com/hapijs/hapi/blob/master/API.md#serverhandlername-method)
-implementation for creating templated responses.
+Cookie authentication provides simple cookie-based session management. The user has to be
+authenticated via other means, typically a web form, and upon successful authentication
+the browser receives a reply with a session cookie. The cookie uses [Iron](https://github.com/hueniverse/iron) to encrypt and sign the session content.
 
-**You will need to install `vision` using something like `npm install --save vision` before you can register it.**
+Subsequent requests containing the session cookie are authenticated and validated via the provided `validateFunc` in case the cookie's encrypted content requires validation on each request.
 
-```js
-const server = new Hapi.Server();
-server.connection({ port: 8080 });
+It is important to remember a couple of things:
 
-server.register(require('vision'), (err) => {
+1. Each cookie operates as a bearer token and anyone in possession of the cookie content can use it to impersonate its true owner. 
+2. Cookies have a practical maximum length. All of the data you store in a cookie is sent to the browser. If your cookie is too long, browsers may not set it. Read more [here](http://webdesign.about.com/od/cookies/f/web-cookies-size-limit.htm) and [here](http://www.ietf.org/rfc/rfc2965.txt). If you need need to store more data, store a small amount of identifying data in the cookie and use that as a key to a server-side cache system.
 
-    if (err) {
-        console.log("Failed to load vision.");
+The `'cookie`' scheme takes the following required options:
+
+- `cookie` - the cookie name. Defaults to `'sid'`.
+- `password` - used for Iron cookie encoding. Should be at least 32 characters long.
+- `ttl` - sets the cookie expires time in milliseconds. Defaults to single browser session (ends
+  when browser closes).
+- `domain` - sets the cookie Domain value. Defaults to none.
+- `path` - sets the cookie path value. Defaults to `/`.
+- `clearInvalid` - if `true`, any authentication cookie that fails validation will be marked as
+  expired in the response and cleared. Defaults to `false`.
+- `keepAlive` - if `true`, automatically sets the session cookie after validation to extend the
+  current session for a new `ttl` duration. Defaults to `false`.
+- `isSecure` - if `false`, the cookie is allowed to be transmitted over insecure connections which
+  exposes it to attacks. Defaults to `true`.
+- `isHttpOnly` - if `false`, the cookie will not include the 'HttpOnly' flag. Defaults to `true`.
+- `redirectTo` - optional login URI to redirect unauthenticated requests to. Note that using
+  `redirectTo` with authentication mode `'try'` will cause the protected endpoint to always
+  redirect, voiding `'try'` mode. To set an individual route to use or disable redirections, use
+  the route `plugins` config (`{ config: { plugins: { 'hapi-auth-cookie': { redirectTo: false } } } }`).
+  Defaults to no redirection.
+- `appendNext` - if `true` and `redirectTo` is `true`, appends the current request path to the
+  query component of the `redirectTo` URI using the parameter name `'next'`. Set to a string to use
+  a different parameter name. Defaults to `false`.
+- `redirectOnTry` - if `false` and route authentication mode is `'try'`, authentication errors will
+  not trigger a redirection. Requires **hapi** version 6.2.0 or newer. Defaults to `true`;
+- `validateFunc` - an optional session validation function used to validate the content of the
+  session cookie on each request. Used to verify that the internal session state is still valid
+  (e.g. user account still exists). The function has the signature `function(request, session, callback)`
+  where:
+    - `request` - is the Hapi request object of the request which is being authenticated.
+    - `session` - is the session object set via `request.cookieAuth.set()`.
+    - `callback` - a callback function with the signature `function(err, isValid, credentials)`
+      where:
+        - `err` - an internal error.
+        - `isValid` - `true` if the content of the session is valid, otherwise `false`.
+        - `credentials` - a credentials object passed back to the application in
+          `request.auth.credentials`. If value is `null` or `undefined`, defaults to `session`. If
+          set, will override the current cookie as if `request.cookieAuth.set()` was called.
+- `requestDecoratorName` - *USE WITH CAUTION* an optional name to use with decorating the `request` object.  Defaults to `'cookieAuth'`.  Using multiple decorator names for separate authentication strategies could allow a developer to call the methods for the wrong strategy.  Potentially resulting in unintended authorized access.
+
+When the cookie scheme is enabled on a route, the `request.cookieAuth` objects is decorated with
+the following methods:
+- `set(session)` - sets the current session. Must be called after a successful login to begin the
+  session. `session` must be a non-null object, which is set on successful subsequent
+  authentications in `request.auth.credentials` where:
+    - `session` - the session object.
+- `set(key, value)` - sets a specific object key on the current session (which must already exist)
+  where:
+    - `key` - session key string.
+    - `value` - value to assign key.
+- `clear([key])` - clears the current session or session key where:
+    - `key` - optional key string to remove a specific property of the session. If none provided,
+      defaults to removing the entire session which is used to log the user out.
+- `ttl(msecs)` - sets the ttl of the current active session where:
+    - `msecs` - the new ttl in milliseconds.
+
+Because this scheme decorates the `request` object with session-specific methods, it cannot be
+registered more than once.
+
+```javascript
+'use strict';
+
+const Hapi = require('hapi');
+
+let uuid = 1;       // Use seq instead of proper unique identifiers for demo only
+
+const users = {
+    john: {
+        id: 'john',
+        password: 'password',
+        name: 'John Doe'
     }
-});
-```
-**NOTE:** Vision is included with and loaded by default in Hapi < 9.0.
+};
 
-- [Examples](#examples)
-    - [EJS](#ejs)
-    - [Handlebars](#handlebars)
-    - [Jade](#jade)
-    - [Mustache](#mustache)
-    - [Nunjucks](#nunjucks)
+const home = function (request, reply) {
 
-See [API.md](./API.md) for detailed usage information.
+    reply('<html><head><title>Login page</title></head><body><h3>Welcome ' +
+      request.auth.credentials.name +
+      '!</h3><br/><form method="get" action="/logout">' +
+      '<input type="submit" value="Logout">' +
+      '</form></body></html>');
+};
 
-## Examples
+const login = function (request, reply) {
 
-**vision** is compatible with most major templating engines out of the box. Engines that don't follow
-the normal API pattern can still be used by mapping their API to the **vision** API. Working code for
-the following examples can be found in the [examples directory](./examples).
+    if (request.auth.isAuthenticated) {
+        return reply.redirect('/');
+    }
 
-### EJS
+    let message = '';
+    let account = null;
 
-```js
-const server = new Hapi.Server();
-server.connection({ port: 8000 });
+    if (request.method === 'post') {
 
-const rootHandler = function (request, reply) {
+        if (!request.payload.username ||
+            !request.payload.password) {
 
-    reply.view('index', {
-        title: 'examples/views/ejs/index.js | Hapi ' + request.server.version,
-        message: 'Index - Hello World!'
+            message = 'Missing username or password';
+        }
+        else {
+            account = users[request.payload.username];
+            if (!account ||
+                account.password !== request.payload.password) {
+
+                message = 'Invalid username or password';
+            }
+        }
+    }
+
+    if (request.method === 'get' ||
+        message) {
+
+        return reply('<html><head><title>Login page</title></head><body>' +
+            (message ? '<h3>' + message + '</h3><br/>' : '') +
+            '<form method="post" action="/login">' +
+            'Username: <input type="text" name="username"><br>' +
+            'Password: <input type="password" name="password"><br/>' +
+            '<input type="submit" value="Login"></form></body></html>');
+    }
+
+    const sid = String(++uuid);
+    request.server.app.cache.set(sid, { account: account }, 0, (err) => {
+
+        if (err) {
+            reply(err);
+        }
+
+        request.cookieAuth.set({ sid: sid });
+        return reply.redirect('/');
     });
 };
 
-server.register(require('vision'), (err) => {
+const logout = function (request, reply) {
+
+    request.cookieAuth.clear();
+    return reply.redirect('/');
+};
+
+const server = new Hapi.Server();
+server.connection({ port: 8000 });
+
+server.register(require('../'), (err) => {
 
     if (err) {
         throw err;
     }
 
-    server.views({
-        engines: { ejs: require('ejs') },
-        relativeTo: __dirname,
-        path: 'templates'
-    });
+    const cache = server.cache({ segment: 'sessions', expiresIn: 3 * 24 * 60 * 60 * 1000 });
+    server.app.cache = cache;
 
-    server.route({ method: 'GET', path: '/', handler: rootHandler });
-});
-```
+    server.auth.strategy('session', 'cookie', true, {
+        password: 'password-should-be-32-characters',
+        cookie: 'sid-example',
+        redirectTo: '/login',
+        isSecure: false,
+        validateFunc: function (request, session, callback) {
 
-### Handlebars
+            cache.get(session.sid, (err, cached) => {
 
-```js
-const server = new Hapi.Server();
-server.connection({ port: 8000 });
+                if (err) {
+                    return callback(err, false);
+                }
 
-const handler = function (request, reply) {
+                if (!cached) {
+                    return callback(null, false);
+                }
 
-    reply.view('basic/index', {
-        title: 'examples/views/handlebars/basic.js | Hapi ' + request.server.version,
-        message: 'Hello World!'
-    });
-};
-
-server.register(require('vision'), (err) => {
-
-    if (err) {
-        throw err;
-    }
-
-    server.views({
-        engines: { html: require('handlebars') },
-        path: __dirname + '/templates'
-    });
-
-    server.route({ method: 'GET', path: '/', handler: handler });
-});
-```
-
-### Jade
-
-```js
-const server = new Hapi.Server();
-server.connection({ port: 8000 });
-
-const rootHandler = function (request, reply) {
-
-    reply.view('index', {
-        title: 'examples/views/jade/index.js | Hapi ' + request.server.version,
-        message: 'Index - Hello World!'
-    });
-};
-
-const aboutHandler = function (request, reply) {
-
-    reply.view('about', {
-        title: 'examples/views/jade/index.js | Hapi ' + request.server.version,
-        message: 'About - Hello World!'
-    });
-};
-
-server.register(require('vision'), (err) => {
-
-    if (err) {
-        throw err;
-    }
-
-    server.views({
-        engines: { jade: require('jade') },
-        path: __dirname + '/templates',
-        compileOptions: {
-            pretty: true
+                return callback(null, true, cached.account);
+            });
         }
     });
 
-    server.route({ method: 'GET', path: '/', handler: rootHandler });
-    server.route({ method: 'GET', path: '/about', handler: aboutHandler });
-});
-```
+    server.route([
+        { method: 'GET', path: '/', config: { handler: home } },
+        { method: ['GET', 'POST'], path: '/login', config: { handler: login, auth: { mode: 'try' }, plugins: { 'hapi-auth-cookie': { redirectTo: false } } } },
+        { method: 'GET', path: '/logout', config: { handler: logout } }
+    ]);
 
-### Mustache
+    server.start(() => {
 
-```js
-const server = new Hapi.Server();
-server.connection({ port: 8000 });
-
-const rootHandler = function (request, reply) {
-
-    reply.view('index', {
-        title: 'examples/views/mustache/index.js | Hapi ' + request.server.version,
-        message: 'Index - Hello World!'
+        console.log('Server ready');
     });
-};
-
-server.register(require('vision'), (err) => {
-
-    if (err) {
-        throw err;
-    }
-
-    server.views({
-        engines: {
-            html: {
-                compile: function (template) {
-
-                    Mustache.parse(template);
-
-                    return function (context) {
-
-                        return Mustache.render(template, context);
-                    };
-                }
-            }
-        },
-        relativeTo: __dirname,
-        path: 'templates'
-    });
-
-    server.route({ method: 'GET', path: '/', handler: rootHandler });
-});
-```
-
-### Nunjucks
-
-```js
-const server = new Hapi.Server();
-server.connection({ port: 8000 });
-
-const rootHandler = function (request, reply) {
-
-    reply.view('index', {
-        title: 'examples/views/nunjucks/index.js | Hapi ' + request.server.version,
-        message: 'Index - Hello World!'
-    });
-};
-
-server.register(require('vision'), (err) => {
-
-    if (err) {
-        throw err;
-    }
-
-    server.views({
-        engines: {
-            html: {
-                compile: function (src, options) {
-
-                    var template = Nunjucks.compile(src, options.environment);
-
-                    return function (context) {
-
-                        return template.render(context);
-                    };
-                },
-
-                prepare: function (options, next) {
-
-                    options.compileOptions.environment = Nunjucks.configure(options.path, { watch : false });
-                    return next();
-                }
-            }
-        },
-        path: Path.join(__dirname, 'templates')
-    });
-
-    server.route({ method: 'GET', path: '/', handler: rootHandler });
 });
 ```
